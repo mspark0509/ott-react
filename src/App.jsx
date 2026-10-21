@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { Home } from './pages/Home'
 import { Movie } from './pages/Movie'
@@ -14,7 +14,8 @@ import { MovieDetail } from './pages/MovieDetail'
 import { TvDetail } from './pages/TvDetail'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
-import { Sports } from './pages/Sports'
+import { Sports as Football } from './pages/Sports'
+import { Baseball } from './pages/Baseball'
 
 function App() {
 
@@ -28,7 +29,9 @@ function App() {
         <Route path="/new" element={<New />} />
         <Route path="/animate" element={<AnimatePage />} />
         <Route path="/heart" element={<Heart />} />
-        <Route path="/sports" element={<Sports />} />
+        <Route path="/football" element={<Football />} />
+        <Route path="/sports" element={<Baseball />} />
+        <Route path="/baseball" element={<Navigate to="/sports" replace />} />
         
         <Route path="/movie/:id" element={<MovieDetail />} />
         <Route path="/tv/:id" element={<TvDetail />} />

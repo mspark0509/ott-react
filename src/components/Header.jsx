@@ -11,7 +11,8 @@ const mainMenu = [
     { id: 3, menu: "NEW 요즘 대세 콘텐츠", path: "/new" },
     { id: 4, menu: "애니메이션", path: "/animate" },
     { id: 5, menu: "찜리스트", path: "/heart" },
-    { id: 6, menu: "스포츠", path: "/sports" },
+    { id: 6, menu: "축구", path: "/football" },
+    { id: 7, menu: "야구", path: "/sports" },
 ]
 const familys = ["아빠", "엄마", "아들", "딸"];
 export const Header = () => {

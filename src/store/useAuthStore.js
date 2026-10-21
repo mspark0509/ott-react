@@ -19,12 +19,10 @@ export const useAuthStore = create((set) => ({
         try {
             // 구글 팝업 로그인
             const result = await signInWithPopup(auth,googleProvider);
-            console.log(result);
             const user=result.user;
             // firestore에 사용자문서확인
             const userRef = doc(db,"users",user.uid);
             const userDoc = await getDoc(userRef);
-            console.log("가져온 정보 : ",userDoc.data());
             // 신규 사용자이면 firestore에 저장
             if(!userDoc.exists()){
                 const userInfo={

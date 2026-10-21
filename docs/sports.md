@@ -1,10 +1,12 @@
-# 스포츠 라이브
+> 야구 메뉴와 `/sports`의 설정·검증은 [baseball.md](./baseball.md)를 참고하세요. 이 문서는 유지된 축구 화면을 설명합니다.
 
-메인 메뉴 마지막의 **스포츠**(`/sports`)에서 경기를 선택하고 경기별 채팅에 참여합니다.
+# 축구 라이브
+
+메인 메뉴의 **축구**(`/football`)에서 경기를 선택하고 경기별 채팅에 참여합니다.
 
 ## 경기 정보와 중계
 
-- 대체 재생 경로: `/sports`의 **FIFA 채널 직접 재생**은 `https://www.youtube.com/embed/live_stream?channel=UCpcTrCXblq78GZrTUTLWeBw`로 사용자 브라우저에서 직접 접속합니다. 검색 서버·API 키가 필요하지 않습니다. 검증된 경기 영상이 없을 때 기본 플레이어로 표시합니다. 채널의 현재 방송이 축구 경기인지는 별도 확인이 필요하므로 경기·LIVE 점수 카드로 위장하지 않습니다.
+- 대체 재생 경로: `/football`의 **FIFA 채널 직접 재생**은 `https://www.youtube.com/embed/live_stream?channel=UCpcTrCXblq78GZrTUTLWeBw`로 사용자 브라우저에서 직접 접속합니다. 검색 서버·API 키가 필요하지 않습니다. 검증된 경기 영상이 없을 때 기본 플레이어로 표시합니다. 채널의 현재 방송이 축구 경기인지는 별도 확인이 필요하므로 경기·LIVE 점수 카드로 위장하지 않습니다.
 - YouTube IFrame Player API의 실제 이벤트로 재생 중·일시정지·종료·외부 재생 금지·영상 부재를 구분합니다. 자동 재생은 음소거로 시도하고 차단되면 재생 버튼을 안내합니다. 상태 API만 차단된 경우 iframe 자체는 유지합니다. 영상이 없거나 임베드가 거부되면 직접 연결 방식으로도 재생을 보장할 수 없습니다.
 - 직접 채널용 채팅은 `footballGames/fifa-channel/messages`의 공용 방이며 개별 경기 방과 구분합니다. 규칙의 `fifa-channel` 허용 부분을 기존 규칙과 병합해 배포해야 합니다. 영상 시청 자체에는 Firebase나 로그인이 필요하지 않습니다.
 
