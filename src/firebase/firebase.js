@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getApps, initializeApp } from "firebase/app";
+import { connectAuthEmulator, getAuth, GoogleAuthProvider } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -16,7 +16,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const existingApp = getApps()[0];
+const app = firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId
+  ? existingApp || initializeApp(firebaseConfig) : null;
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+// Opt in only for local development; never redirect a deployed client to emulators.
+if (app && !existingApp && import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true'
+  && ['localhost', '127.0.0.1'].includes(globalThis.location?.hostname)) {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099');
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+}
 export const googleProvider = new GoogleAuthProvider();
