@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { collection, limit, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { GameChat } from '../features/sports/GameChat';
+import { FifaChannelPlayer } from '../features/sports/FifaChannelPlayer';
+import { fifaChannelRoom } from '../features/sports/youtubePlayer';
 import { demoGames, footballScheduleUrl, footballLeagues, parseFootballSchedule, readGame, streamSource } from '../features/sports/games';
 import './Sports.css';
 
@@ -45,6 +47,7 @@ export function Sports() {
   const [refresh, setRefresh] = useState(0);
   const [updatedAt, setUpdatedAt] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [viewMode, setViewMode] = useState('auto');
   const [filter, setFilter] = useState('전체');
   const [feedState, setFeedState] = useState(db ? 'loading' : 'unconfigured');
   useEffect(() => {
@@ -107,6 +110,7 @@ export function Sports() {
   const visibleGames = filter === '전체' ? allGames : allGames.filter((game) => game.league === filter);
   const selected = visibleGames.find((game) => game.id === selectedId) || visibleGames[0];
   const liveCount = mergedGames.filter((game) => game.status === 'live').length;
+  const showChannel = viewMode === 'channel' || (viewMode === 'auto' && !fifaGames.length);
 
   return <main className="sports-page">
     <div className="sports-container">
@@ -118,7 +122,7 @@ export function Sports() {
           : fifaGames.length ? `현재 확인된 공식 축구 생중계 ${fifaGames.length}개 · 경기 목록 맨 앞에서 바로 시청하세요.`
             : 'FIFA 공식 YouTube에서 확인된 축구 생중계가 없습니다. FIFA+ 편성도 확인해 보세요.'}</p>
           {fifaState === 'connected' && <small>{new Date(fifaCheckedAt).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul' })} 확인 · 30초마다 재확인 (한국 시간)</small>}</div>
-        <div className="sports-fifa-actions"><a href="https://www.youtube.com/@fifa/live" target="_blank" rel="noopener noreferrer">FIFA 공식 라이브 채널 ↗</a><a href="https://www.plus.fifa.com/" target="_blank" rel="noopener noreferrer">FIFA+ 편성 확인 ↗</a>
+        <div className="sports-fifa-actions"><button onClick={() => setViewMode('channel')} aria-pressed={showChannel}>FIFA 채널 직접 재생</button><a href="https://www.youtube.com/@fifa/live" target="_blank" rel="noopener noreferrer">FIFA 공식 라이브 채널 ↗</a><a href="https://www.plus.fifa.com/" target="_blank" rel="noopener noreferrer">FIFA+ 편성 확인 ↗</a>
           {fifaState === 'error' && <button onClick={() => setRefresh((value) => value + 1)}>다시 확인</button>}</div>
       </section>
       <div className="sports-feed-note" role="status">
@@ -130,15 +134,16 @@ export function Sports() {
       <div className="sports-official-links"><span>축구 중계 서비스</span><a href="https://www.coupangplay.com" target="_blank" rel="noopener noreferrer">쿠팡플레이 ↗</a><a href="https://www.plus.fifa.com/" target="_blank" rel="noopener noreferrer">FIFA+ ↗</a><small>경기별 제공 여부·이용권·지역 제한을 확인해 주세요.</small></div>
       <section className="sports-schedule" aria-label="축구 경기 목록">
         <div className="sports-schedule-heading"><h2>⚽ 축구 <span>{allGames.length}경기</span></h2>
-          <div className="sports-filters" aria-label="리그 선택">{['전체', 'FIFA LIVE', ...footballLeagues.map((league) => league.name)].map((league) => <button key={league} aria-pressed={filter === league} onClick={() => { setFilter(league); setSelectedId(null); }}>{league}</button>)}</div></div>
-        <div className="sports-game-grid">{visibleGames.map((game) => <button key={game.id} className={`sports-game-card ${selected?.id === game.id ? 'selected' : ''}`} aria-pressed={selected?.id === game.id} onClick={() => setSelectedId(game.id)}>
+          <div className="sports-filters" aria-label="리그 선택">{['전체', 'FIFA LIVE', ...footballLeagues.map((league) => league.name)].map((league) => <button key={league} aria-pressed={filter === league} onClick={() => { setFilter(league); setSelectedId(null); setViewMode('game'); }}>{league}</button>)}</div></div>
+        <div className="sports-game-grid">{visibleGames.map((game) => <button key={game.id} className={`sports-game-card ${!showChannel && selected?.id === game.id ? 'selected' : ''}`} aria-pressed={!showChannel && selected?.id === game.id} onClick={() => { setSelectedId(game.id); setViewMode('game'); }}>
           <div className="sports-card-top"><span className={`sports-badge ${game.status}`}>{statusLabel[game.status]}</span><span>{game.league}</span></div>
           <div className="sports-team"><span><i>{game.home.slice(0, 1)}</i>{game.home}</span><strong>{game.status === 'demo' ? '–' : game.homeScore}</strong></div>
           <div className="sports-team"><span><i>{game.away.slice(0, 1)}</i>{game.away}</span><strong>{game.status === 'demo' ? '–' : game.awayScore}</strong></div>
           <div className="sports-card-bottom"><span>{game.venue}</span><span>{game.matchTime || statusLabel[game.status]}</span></div>
         </button>)}</div>
       </section>
-      {selected ? <div className="sports-viewing"><GamePlayer key={selected.id + selected.streamUrl} game={selected} /><GameChat key={selected.id} game={selected} /></div>
+      {showChannel ? <div className="sports-viewing"><FifaChannelPlayer /><GameChat key={fifaChannelRoom.id} game={fifaChannelRoom} /></div>
+        : selected ? <div className="sports-viewing"><GamePlayer key={selected.id + selected.streamUrl} game={selected} /><GameChat key={selected.id} game={selected} /></div>
         : <p className="sports-feed-note">이 리그에 등록된 경기가 없습니다.</p>}
     </div>
   </main>;
