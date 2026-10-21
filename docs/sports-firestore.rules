@@ -8,6 +8,7 @@ match /footballGames/{gameId} {
     allow read: if true;
     allow create: if request.auth != null
       && (gameId.matches('football-(eng[.]1|esp[.]1|kor[.]1)-[0-9]+')
+        || gameId.matches('fifa-[A-Za-z0-9_-]{11}')
         || exists(/databases/$(database)/documents/footballGames/$(gameId)))
       && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'createdAt'])
       && request.resource.data.uid == request.auth.uid

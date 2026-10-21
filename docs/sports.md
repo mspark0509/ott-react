@@ -4,6 +4,11 @@
 
 ## 경기 정보와 중계
 
+- FIFA 공식 라이브: 배포된 `/api/fifa-live` 서버 함수가 공식 `@fifa` YouTube 스트림 페이지에서 라이브 후보를 찾고 영상별 채널 ID, 현재 방송 여부를 확인합니다. 공식 채널 ID는 `UCpcTrCXblq78GZrTUTLWeBw`입니다. 생방송 중인 축구 경기만 FIFA LIVE 카드로 먼저 표시하고 외부 재생이 허용되면 임베드합니다. 녹화·종료·예정 영상, 조 추첨·기자회견은 라이브 경기로 올리지 않습니다. 외부 재생 제한 시 동일한 공식 영상 링크로 이동할 수 있습니다.
+- FIFA 상태는 30초마다 확인합니다. 조회 실패 시 기존 FIFA 영상을 LIVE로 계속 표시하지 않고 확인 실패 안내로 전환합니다. 공식 YouTube에 확인된 경기가 없는 경우와 조회 실패를 구분합니다. FIFA+ 자체 편성과 YouTube의 편성은 다를 수 있으며, FIFA+ 편성 확인 링크를 별도로 제공합니다.
+- 배포 서버에 기존 `YOUTUBE_API_KEY` 또는 `VITE_YOUTUBE_API_KEY`가 있으면 지원되는 YouTube Data API를 우선 사용합니다. 공식 채널의 최신 업로드 50개를 대상으로 영상 소유 채널, 현재 라이브 표시, 실제 시작·종료 시각, 외부 재생 허용 여부를 확인합니다. 키가 없거나 API가 거부되면 공개 공식 채널 페이지 조회로 전환합니다. 키 값은 응답·로그·저장소에 노출하지 않습니다. API 쿼터가 적용되며 Vercel CDN에서 성공 응답을 25초 캐시합니다.
+- 공식 페이지 형식 변경, 지역·동의 화면, 접근 제한이 있으면 검색이 실패할 수 있습니다. 서버 함수가 실제 소스에 접속할 수 있어야 하며, FIFA+에 있는 모든 생중계를 자동 수집하는 API는 아닙니다. 현재 클라우드에서 FIFA/YouTube 요청은 프록시 403으로 실제 라이브·재생을 검증하지 못했습니다. 테스트 데이터는 실제 현재 경기의 증거가 아닙니다.
+
 - ESPN 공개 축구 scoreboard API `https://site.api.espn.com/apis/site/v2/sports/soccer/{league}/scoreboard`에서 프리미어리그(`eng.1`), 라리가(`esp.1`), K리그1(`kor.1`)의 최근 7일~향후 14일 경기 정보를 30초마다 갱신합니다. API 키가 필요하지 않은 공개 엔드포인트이며 장기 제공·CORS·가용성은 보장되지 않습니다. 일부 리그 실패 시 안내하고, 전체 실패 시 재시도와 예시 경기를 표시합니다.
 - 축구 시청 서비스: [쿠팡플레이](https://www.coupangplay.com), [FIFA+](https://www.plus.fifa.com/). 경기별 중계권, 로그인, 이용권, 지역 제한이 적용됩니다. 모든 경기의 중계나 앱 내 영상 재생을 보장하지 않습니다.
 - 경기마다 ESPN 상세 링크를 제공합니다. 시작 시간은 한국 시간으로 표시하고, 홈팀을 먼저 표시합니다. 점수와 진행 시간, LIVE·예정·종료 상태가 반영됩니다.
@@ -27,7 +32,9 @@ Firebase Authentication에서 Google 로그인을 활성화하고 실제 서비�
 
 ## 검증과 로컬 개발
 
-`npm run build`, `npx eslint src/pages/Sports.jsx src/features/sports/*.js src/features/sports/*.jsx src/firebase/firebase.js src/components/Header.jsx`, `node --test tests/sports.test.mjs`.
+`npm run build`, `npx eslint src/pages/Sports.jsx src/features/sports/*.js src/features/sports/*.jsx src/firebase/firebase.js src/components/Header.jsx api/fifa-live.js lib/fifa-live.js vite.config.js`, `node --test tests/*.test.mjs`.
+
+FIFA 영상 채팅 ID는 `fifa-{11자리 videoId}`입니다. 변경된 축구 채팅 규칙을 기존 규칙과 병합해 배포해야 합니다. Firebase 설정이나 API 키 없이도 FIFA 영상 검색은 실행됩니다. Vercel은 `api/fifa-live.js`를 서버 함수로 배포하며, Vite 개발 서버에도 같은 핸들러를 연결했습니다. 정적 파일만 올리는 호스팅에서는 서버 함수를 별도로 제공해야 합니다.
 
 Firebase Auth/Firestore Emulator를 사용할 때만 개발 서버에 `VITE_FIREBASE_EMULATORS=true`를 지정합니다. localhost에서 개발 모드일 때만 Auth 9099, Firestore 8080에 연결합니다. 테스트에는 `demo-` 프로젝트를 사용하고 운영 데이터에 쓰지 마세요.
 
